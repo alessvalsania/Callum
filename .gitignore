@@ -1,0 +1,23 @@
+# Ignore the Unity temporary and build folders
+[Tt]emp/
+[Ll]ibrary/
+[Ll]og/
+[Ll]ogs/
+[Oo]bj/
+[Oo]ut/
+[Bb]uild/
+[Uu]serSettings/
+Build/
+Builds/
+[Dd]ebug/
+[Dd]ebugPublic/
+[A]ssets/AssetStoreTools*
+
+# User-specific files
+.idea/
+.vscode/
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
