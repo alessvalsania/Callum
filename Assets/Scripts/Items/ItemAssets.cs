@@ -21,6 +21,11 @@ public class ItemAssets : MonoBehaviour
     [SerializeField] private Sprite manaPotionSprite;
     [SerializeField] private Sprite coinSprite;
     [SerializeField] private Sprite medKitSprite;
+    [SerializeField] private Sprite broomSprite;
+    [SerializeField] private Sprite pickaxeSprite;
+    [SerializeField] private Sprite mineralSprite;
+
+
 
     public Sprite GetItemSprite(Item.ItemType itemType)
     {
@@ -36,6 +41,12 @@ public class ItemAssets : MonoBehaviour
                 return coinSprite;
             case Item.ItemType.MedKit:
                 return medKitSprite;
+            case Item.ItemType.Broom:
+                return broomSprite;
+            case Item.ItemType.Pickaxe:
+                return pickaxeSprite;
+            case Item.ItemType.Mineral:
+                return mineralSprite;
             default:
                 return null;
         }

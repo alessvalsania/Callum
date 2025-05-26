@@ -11,6 +11,9 @@ public class Item
         ManaPotion,
         Coin,
         MedKit,
+        Broom,
+        Pickaxe,
+        Mineral
     }
 
     public ItemType itemType;
@@ -30,9 +33,12 @@ public class Item
             case ItemType.HealthPotion:
             case ItemType.ManaPotion:
             case ItemType.Coin:
+            case ItemType.Mineral:
                 return true;
             case ItemType.Sword:
             case ItemType.MedKit:
+            case ItemType.Broom:
+            case ItemType.Pickaxe:
                 return false;
         }
     }

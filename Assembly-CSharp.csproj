@@ -72,6 +72,7 @@
     <Compile Include="Assets\Scripts\Inventory\Inventory.cs" />
     <Compile Include="Assets\Scripts\Core\IInteractable.cs" />
     <Compile Include="Assets\Codemonkey\Utils\FunctionUpdater.cs" />
+    <Compile Include="Assets\Scripts\Items\BigMineralInteractable.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
     <Compile Include="Assets\Cainos\Pixel Art Top Down - Basic\Script\SpriteColorAnimation.cs" />
     <Compile Include="Assets\Codemonkey\MonoBehaviours\PositionRendererSorter.cs" />
@@ -83,8 +84,10 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
     <Compile Include="Assets\Codemonkey\MonoBehaviours\ComponentActions.cs" />
+    <Compile Include="Assets\Scripts\Items\TrashInteractable.cs" />
     <Compile Include="Assets\Codemonkey\Utils\UI_BarMultiple.cs" />
     <Compile Include="Assets\Codemonkey\Utils\FunctionPeriodic.cs" />
+    <Compile Include="Assets\Scripts\Minigames\SimonSays\InteractableObjectMinigameButton.cs" />
     <Compile Include="Assets\Codemonkey\Utils\UtilsClass.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_UiFrameRateCounter.cs" />
@@ -135,6 +138,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs" />
     <Compile Include="Assets\Codemonkey\CMDebug.cs" />
     <Compile Include="Assets\Codemonkey\Utils\UI_TextComplex.cs" />
+    <Compile Include="Assets\Scripts\Minigames\SimonSays\MinigameButtons.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
