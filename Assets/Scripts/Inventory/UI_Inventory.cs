@@ -8,6 +8,8 @@ public class UI_Inventory : MonoBehaviour
     [SerializeField] private Transform itemSlotContainer;
     [SerializeField] private Transform itemSlotTemplate;
 
+    Player player;
+
     private void Awake()
     {
         // itemSlotContainer = transform.Find("itemSlotContainer");
@@ -19,6 +21,7 @@ public class UI_Inventory : MonoBehaviour
         this.inventory = inventory;
         inventory.OnItemListChanged += Inventory_OnItemListChanged;
         UpdateInventoryUI();
+        player = Player.Instance;
     }
 
     private void Inventory_OnItemListChanged(object sender, EventArgs e)
@@ -38,6 +41,7 @@ public class UI_Inventory : MonoBehaviour
         int y = 0;
         float itemSlotCellSize = 100f;
 
+        int index = 0;
         foreach (Item item in inventory.GetItemList())
         {
             RectTransform itemSlotRectTransform = Instantiate(itemSlotTemplate, itemSlotContainer).GetComponent<RectTransform>();
@@ -55,16 +59,15 @@ public class UI_Inventory : MonoBehaviour
                 uiText.text = "";
             }
 
-            // Set the item type and amount in the UI
-            // For example, you can set the text of a Text component or an Image component here
-            // itemSlotRectTransform.GetComponentInChildren<Text>().text = item.itemType.ToString() + " x" + item.amount;
-
+            if (index == inventory.selectedItemIndex)
+            {
+                itemSlotRectTransform.Find("backgroundSelected").gameObject.SetActive(true);
+                itemSlotRectTransform.Find("background").gameObject.SetActive(false);
+                player.SetHoldPointImageVisual(image.sprite);
+            }
+            index++;
             x++;
-            //     if (x > 4) // Assuming 5 items per row
-            //     {
-            //         x = 0;
-            //         y--;
-            //     }
+
         }
     }
 

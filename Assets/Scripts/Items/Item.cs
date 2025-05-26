@@ -10,7 +10,7 @@ public class Item
         HealthPotion,
         ManaPotion,
         Coin,
-        MedKit
+        MedKit,
     }
 
     public ItemType itemType;
