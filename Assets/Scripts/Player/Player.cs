@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -120,8 +121,7 @@ public class Player : MonoBehaviour
         {
             // Load the next level or scene
             Debug.Log("Next level trigger entered. Loading next level...");
-            // Aquí puedes agregar la lógica para cargar el siguiente nivel
-            // SceneManager.LoadScene("NextLevelName"); // Asegúrate de tener el using UnityEngine.SceneManagement;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
     }
 
