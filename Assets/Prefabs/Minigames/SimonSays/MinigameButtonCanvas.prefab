@@ -646,7 +646,7 @@ GameObject:
   - component: {fileID: 8692284586493095364}
   - component: {fileID: 7936034788512095596}
   - component: {fileID: 3432300836709997392}
-  - component: {fileID: 8868529699110745717}
+  - component: {fileID: 3125665916138630979}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -713,7 +713,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &8868529699110745717
+--- !u!114 &3125665916138630979
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -722,20 +722,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3789877263507536127}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 971e8fa59c9fb694bb3088547c96502a, type: 3}
+  m_Script: {fileID: 11500000, guid: af3b2ce8ba2388f4e8eb03fc1be2f49a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   interactableObject: {fileID: 0}
-  gridButtons:
-  - {fileID: 5090966190199594874}
-  - {fileID: 7007668029029058662}
-  - {fileID: 9020181194585926878}
-  - {fileID: 683029752539994046}
-  - {fileID: 8007598224609222028}
-  - {fileID: 328067080973748663}
-  - {fileID: 8354567780758631574}
-  - {fileID: 9006114018585379888}
-  - {fileID: 2102251736634559549}
+  gridButtons: []
   highlightTime: 0.5
   waitTime: 0.3
 --- !u!1 &3980168005151501095
