@@ -86,6 +86,7 @@
     <Compile Include="Assets\Codemonkey\MonoBehaviours\ComponentActions.cs" />
     <Compile Include="Assets\Scripts\Items\TrashInteractable.cs" />
     <Compile Include="Assets\Codemonkey\Utils\UI_BarMultiple.cs" />
+    <Compile Include="Assets\Scripts\UI\GameOverScript.cs" />
     <Compile Include="Assets\Codemonkey\Utils\FunctionPeriodic.cs" />
     <Compile Include="Assets\Scripts\Minigames\SimonSays\InteractableObjectMinigameButton.cs" />
     <Compile Include="Assets\Codemonkey\Utils\UtilsClass.cs" />
@@ -141,6 +142,7 @@
     <Compile Include="Assets\Codemonkey\CMDebug.cs" />
     <Compile Include="Assets\Codemonkey\Utils\UI_TextComplex.cs" />
     <Compile Include="Assets\Scripts\Minigames\SimonSays\MinigameButtons.cs" />
+    <Compile Include="Assets\Scripts\UI\ContinueScript.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
