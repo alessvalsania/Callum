@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      inventario-pieza-idle_0: 5510044893263172764
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

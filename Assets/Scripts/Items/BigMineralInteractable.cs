@@ -63,10 +63,23 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         }
 
         // Cambiar color del sprite o agregar outline
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        Debug.Log($"SpriteRenderers encontrados: {spriteRenderers.Length}");
+        if (spriteRenderers.Length > 0)
         {
-            spriteRenderer.color = Color.yellow; // Destacar el objeto
+            // Cambiar el color del primer SpriteRenderer encontrado
+            if (player.GetInventory().HasItem(requiredItemType))
+            {
+                spriteRenderers[1].color = Color.yellow; // Cambiar a un color de resaltado
+            }
+            else
+            {
+                spriteRenderers[1].color = Color.red; // Cambiar a un color de advertencia
+            }
+            if (player.GetSelectedItem().itemType == requiredItemType)
+            {
+                spriteRenderers[1].color = Color.green; // Cambiar a un color de éxito
+            }
         }
     }
 
@@ -80,10 +93,11 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         }
 
         // Restaurar color original
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        if (spriteRenderers.Length > 0)
         {
-            spriteRenderer.color = Color.white;
+            // Restaurar el color del primer SpriteRenderer encontrado
+            spriteRenderers[1].color = Color.white; // Restaurar al color original
         }
     }
 

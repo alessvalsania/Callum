@@ -10,7 +10,13 @@ public class Player : MonoBehaviour
 
 
     [SerializeField] private GameInput gameInput; // Agregar esta línea
-    [SerializeField] private GameObject itemVisual;
+    [SerializeField] public GameObject itemVisual;
+
+    private bool isWalking = false; // Variable para controlar si el jugador está caminando
+    private bool isSprinting = false; // Variable para controlar si el jugador está corriendo
+    private SpriteRenderer spriteRenderer; // Reference to the SpriteRenderer component for visual feedback
+    public Animator animator;
+
 
 
     // MOVEMENT VARIABLES
@@ -36,6 +42,17 @@ public class Player : MonoBehaviour
         {
             Debug.LogWarning("There are multiple instances of Player");
         }
+
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is not assigned in Player script. Please assign it in the inspector.");
+        }
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("SpriteRenderer component is not assigned in Player script. Please assign it in the inspector.");
+        }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -60,6 +77,8 @@ public class Player : MonoBehaviour
     {
         HandleMovement();
         HandleInteractWithWorld();
+        animator.SetBool("isWalking", isWalking);
+        animator.SetBool("isSprinting", isSprinting);
 
         // Debug.Log("Player position: " + transform.position);
         // Debug.Log("Last move direction: " + lastMoveDirection);
@@ -92,13 +111,18 @@ public class Player : MonoBehaviour
             }
             Item item = itemWorld.GetItem();
             inventory.AddItem(item);
+            animator.SetTrigger("interact");
             itemWorld.DestroySelf();
         }
         // Esto seguramente funcionará mas adelante
         // // This is called when the collider enters the trigger
-        // if (other.CompareTag("Item"))
-        // {
-        // }
+        if (other.CompareTag("NextLevel"))
+        {
+            // Load the next level or scene
+            Debug.Log("Next level trigger entered. Loading next level...");
+            // Aquí puedes agregar la lógica para cargar el siguiente nivel
+            // SceneManager.LoadScene("NextLevelName"); // Asegúrate de tener el using UnityEngine.SceneManagement;
+        }
     }
 
     private void HandleMovement()
@@ -107,12 +131,29 @@ public class Player : MonoBehaviour
         bool sprint = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         float currentSpeed = moveSpeed * (sprint ? sprintMultiplier : 1f);
         Vector2 targetVelocity = moveInput * currentSpeed;
+
         // Smooth acceleration and deceleration
         smoothedVelocity = Vector2.Lerp(smoothedVelocity, targetVelocity, movementResponsiveness * Time.deltaTime);
         GetComponent<Rigidbody2D>().linearVelocity = smoothedVelocity;
+
+
+        // Girar sprite según la dirección horizontal
+        if (moveInput.x > 0.01f)
+            spriteRenderer.flipX = false;
+        else if (moveInput.x < -0.01f)
+            spriteRenderer.flipX = true;
+
         if (moveInput != Vector2.zero)
         {
             lastMoveDirection = moveInput;
+            isWalking = true; // Set walking state to true when there is movement input
+            isSprinting = sprint; // Set sprinting state based on input
+
+        }
+        else
+        {
+            isWalking = false; // Set walking state to false when there is no movement input
+            isSprinting = false; // Set sprinting state to false when there is no movement input
         }
     }
 
@@ -210,5 +251,6 @@ public class Player : MonoBehaviour
     {
         return currentInteractable;
     }
+
 }
 

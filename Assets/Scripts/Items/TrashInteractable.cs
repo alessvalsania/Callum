@@ -38,6 +38,7 @@ public class TrashInteractable : MonoBehaviour, IInteractable
 
     private void PerformSpecialInteraction(Player player)
     {
+        player.animator.SetTrigger("interact");
         Destroy(gameObject); // Destruir el objeto interactuable después de la interacción
     }
 
@@ -63,7 +64,19 @@ public class TrashInteractable : MonoBehaviour, IInteractable
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            spriteRenderer.color = Color.yellow; // Destacar el objeto
+            // Cambiar el color del primer SpriteRenderer encontrado
+            if (player.GetInventory().HasItem(requiredItemType))
+            {
+                spriteRenderer.color = Color.yellow; // Cambiar a un color de resaltado
+            }
+            else
+            {
+                spriteRenderer.color = Color.red; // Cambiar a un color de advertencia
+            }
+            if (player.GetSelectedItem()?.itemType == requiredItemType)
+            {
+                spriteRenderer.color = Color.green; // Cambiar a un color de éxito
+            }
         }
     }
 

@@ -9,10 +9,6 @@ public class ItemWorld : MonoBehaviour
         Transform itemTransform = Instantiate(ItemAssets.Instance.GetItemWorldPrefab(), position, Quaternion.identity);
         ItemWorld itemWorld = itemTransform.GetComponent<ItemWorld>();
         itemWorld.SetItem(item);
-        if (item.itemType == Item.ItemType.Pickaxe)
-        {
-            itemTransform.localScale = new Vector3(0.25f, 0.25f, 0.25f); // Adjust scale for pickaxe
-        }
         if (item.itemType == Item.ItemType.Mineral)
         {
             itemTransform.localScale = new Vector3(0.8f, 0.8f, 0.8f); // Adjust scale for mineral
