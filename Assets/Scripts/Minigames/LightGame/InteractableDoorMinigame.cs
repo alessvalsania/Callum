@@ -48,6 +48,7 @@ public class DoorMinigame : MonoBehaviour, IInteractable
         {
             minigameCanvas.SetActive(true); // Activa el GameObject, haciéndolo visible
             Debug.Log("Canvas del minijuego mostrado.");
+            
         }
         else
         {

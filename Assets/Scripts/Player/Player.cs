@@ -4,6 +4,20 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
+    // SOUND VARIABLES
+    [Header("Sound Settings")] // Puedes usar un Header para organizar en el Inspector
+    [SerializeField] private AudioSource audioSource; // Componente AudioSource en el jugador
+    [SerializeField] private AudioClip walkSound;     // Sonido para caminar
+    [SerializeField] private AudioClip sprintSound;   // Sonido para correr
+    [SerializeField] private float walkSoundDelay = 0.3f; // Retraso entre sonidos al caminar
+    [SerializeField] private float sprintSoundDelay = 0.2f; // Retraso entre sonidos al correr
+    [Header("Interaction Sound Settings")]
+    [SerializeField] private float soundProximityThreshold = 1f; // Distancia mínima para activar el sonido de un objeto
+    [SerializeField] private AudioClip pickUpSound; // Sonido al recoger un objeto
+
+    private float nextWalkSoundTime;
+    private float nextSprintSoundTime;
+
 
     // INVENTORY VARIABLES
     private Inventory inventory;
@@ -53,6 +67,12 @@ public class Player : MonoBehaviour
         if (spriteRenderer == null)
         {
             Debug.LogError("SpriteRenderer component is not assigned in Player script. Please assign it in the inspector.");
+        }
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            Debug.LogWarning("AudioSource component is not assigned to Player. Add an AudioSource component to the Player GameObject to enable footstep sounds.");
         }
     }
 
@@ -112,6 +132,12 @@ public class Player : MonoBehaviour
             }
             Item item = itemWorld.GetItem();
             inventory.AddItem(item);
+
+            if(audioSource != null && pickUpSound != null)
+            {
+                audioSource.PlayOneShot(pickUpSound);
+            }
+
             animator.SetTrigger("interact");
             itemWorld.DestroySelf();
         }
@@ -123,6 +149,36 @@ public class Player : MonoBehaviour
             Debug.Log("Next level trigger entered. Loading next level...");
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
+
+        // --- NUEVA LÓGICA PARA REPRODUCIR SONIDO AL ENTRAR EN UN TRIGGER ESPECÍFICO ---
+
+        // 1. Opcion: Usar un Tag para identificar el objeto que emite sonido
+        if (other.CompareTag("soundObject")) // Asegúrate de que tu GameObject tenga este Tag
+        {
+            AudioSource objectAudioSource = other.GetComponent<AudioSource>();
+            if (objectAudioSource != null && !objectAudioSource.isPlaying) // Solo si no está reproduciendo ya
+            {
+                objectAudioSource.Play();
+                Debug.Log($"Sonido del objeto '{other.name}' iniciado.");
+            }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        // --- NUEVA LÓGICA PARA DETENER SONIDO AL SALIR DE UN TRIGGER ESPECÍFICO ---
+
+        // Puedes detener el sonido si el jugador se aleja
+        if (other.CompareTag("soundObject"))
+        {
+            AudioSource objectAudioSource = other.GetComponent<AudioSource>();
+            if (objectAudioSource != null && objectAudioSource.isPlaying)
+            {
+                objectAudioSource.Stop();
+                Debug.Log($"Sonido del objeto '{other.name}' detenido.");
+            }
+        }
+        // --- FIN DE LA NUEVA LÓGICA ---
     }
 
     private void HandleMovement()
@@ -148,12 +204,36 @@ public class Player : MonoBehaviour
             lastMoveDirection = moveInput;
             isWalking = true; // Set walking state to true when there is movement input
             isSprinting = sprint; // Set sprinting state based on input
-
+            // Lógica para reproducir sonidos
+            if (audioSource != null) // Asegúrate de que hay un AudioSource asignado
+            {
+                if (isSprinting && sprintSound != null)
+                {
+                    if (Time.time >= nextSprintSoundTime)
+                    {
+                        audioSource.PlayOneShot(sprintSound);
+                        nextSprintSoundTime = Time.time + sprintSoundDelay;
+                    }
+                }
+                else if (isWalking && walkSound != null)
+                {
+                    if (Time.time >= nextWalkSoundTime)
+                    {
+                        audioSource.PlayOneShot(walkSound);
+                        nextWalkSoundTime = Time.time + walkSoundDelay;
+                    }
+                }
+            }
         }
         else
         {
             isWalking = false; // Set walking state to false when there is no movement input
             isSprinting = false; // Set sprinting state to false when there is no movement input
+            // Opcional: Detener cualquier sonido de paso en curso si el jugador se detiene
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
         }
     }
 
