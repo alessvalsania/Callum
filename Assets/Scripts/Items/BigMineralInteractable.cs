@@ -8,6 +8,10 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
     [SerializeField] private GameObject highlightEffect; // Opcional: efecto visual cuando está en rango
     [SerializeField] private Item.ItemType spawningItemType; // Opcional: efecto visual cuando está en rango
     [SerializeField] private Transform spawnMineralPoint; // Indica si el objeto está activo para interactuar
+    [SerializeField] private AudioClip breakRockSound; // Sonido al romper la piedra
+    [SerializeField] private AudioSource audioSource; // AudioSource propio de la piedra
+
+    private bool isBeingDestroyed = false;
 
     public void Interact(Player player)
     {
@@ -40,8 +44,14 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
 
     private void PerformSpecialInteraction(Player player)
     {
+        // Reproducir sonido de romper piedra
+        if (breakRockSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(breakRockSound);
+        }
+        isBeingDestroyed = true;
         ItemWorld.DropItem(spawnMineralPoint.position, new Item { itemType = spawningItemType, amount = 1 });
-        Destroy(gameObject); // Destruir el objeto interactuable después de la interacción
+        Destroy(gameObject, breakRockSound != null ? breakRockSound.length : 0f); // Espera a que termine el sonido
     }
 
     public string GetInteractText()
@@ -85,6 +95,7 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
 
     public void OnPlayerExit(Player player)
     {
+        if (isBeingDestroyed) return;
 
         // Desactivar efecto visual
         if (highlightEffect != null)
