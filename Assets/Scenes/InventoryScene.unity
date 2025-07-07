@@ -5417,6 +5417,11 @@ PrefabInstance:
       objectReference: {fileID: 659282573}
     - target: {fileID: 6508346299024846530, guid: 583f3af04d74b0042a24a2d0bc4a5197,
         type: 3}
+      propertyPath: hurtSound
+      value: 
+      objectReference: {fileID: 8300000, guid: b77dc8e333f1a5a46a8c79f19925b3e2, type: 3}
+    - target: {fileID: 6508346299024846530, guid: 583f3af04d74b0042a24a2d0bc4a5197,
+        type: 3}
       propertyPath: walkSound
       value: 
       objectReference: {fileID: 8300000, guid: afd853c6632377941b17f18564bb73f9, type: 3}
@@ -5425,6 +5430,11 @@ PrefabInstance:
       propertyPath: itemVisual
       value: 
       objectReference: {fileID: 1527326034}
+    - target: {fileID: 6508346299024846530, guid: 583f3af04d74b0042a24a2d0bc4a5197,
+        type: 3}
+      propertyPath: attackSound
+      value: 
+      objectReference: {fileID: 8300000, guid: bf9b79d1ff4ab04419c26c21a0548390, type: 3}
     - target: {fileID: 6508346299024846530, guid: 583f3af04d74b0042a24a2d0bc4a5197,
         type: 3}
       propertyPath: audioSource
@@ -14174,8 +14184,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 3df4cb2ead5a08141aa442726b43b6b4, type: 3}
+  m_audioClip: {fileID: 8300000, guid: f9817f3cfb0063b4293e4560aff5f722, type: 3}
+  m_Resource: {fileID: 8300000, guid: f9817f3cfb0063b4293e4560aff5f722, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.1
   m_Pitch: 1
@@ -22210,7 +22220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactText: Examinar objeto
   requiresSpecificItem: 1
-  requiredItemType: 7
+  requiredItemType: 5
   minigameCanvas: {fileID: 2133808869}
 --- !u!61 &992462215
 BoxCollider2D:
