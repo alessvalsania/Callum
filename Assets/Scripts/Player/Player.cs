@@ -4,6 +4,22 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
+    // SOUND VARIABLES
+    [Header("Sound Settings")] // Puedes usar un Header para organizar en el Inspector
+    [SerializeField] private AudioSource audioSource; // Componente AudioSource en el jugador
+    [SerializeField] private AudioSource sfxAudioSource; // Componente AudioSource en el jugador
+    [SerializeField] private AudioClip walkSound;     // Sonido para caminar
+    [SerializeField] private AudioClip sprintSound;   // Sonido para correr
+    [SerializeField] private float walkSoundDelay = 0.3f; // Retraso entre sonidos al caminar
+    [SerializeField] private float sprintSoundDelay = 0.2f; // Retraso entre sonidos al correr
+    [Header("Interaction Sound Settings")]
+    [SerializeField] private float soundProximityThreshold = 1f; // Distancia mínima para activar el sonido de un objeto
+    [SerializeField] private AudioClip pickupSound; // Sonido al recoger objeto
+
+    private float nextWalkSoundTime;
+    private float nextSprintSoundTime;
+
+
     // INVENTORY VARIABLES
     private Inventory inventory;
     [SerializeField] UI_Inventory uiInventory;
@@ -69,6 +85,12 @@ public class Player : MonoBehaviour
             uiBatteryHealth.SetHealth(health);
         }
         OnHealthChanged += (h) => { if (uiBatteryHealth != null) uiBatteryHealth.SetHealth(h); Debug.Log(h); };
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            Debug.LogWarning("AudioSource component is not assigned to Player. Add an AudioSource component to the Player GameObject to enable footstep sounds.");
+        }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -133,6 +155,11 @@ public class Player : MonoBehaviour
             Item item = itemWorld.GetItem();
             inventory.AddItem(item);
             animator.SetTrigger("interact");
+            // Reproducir sonido de recogida usando el AudioSource de efectos
+            if (pickupSound != null && sfxAudioSource != null)
+            {
+                sfxAudioSource.PlayOneShot(pickupSound);
+            }
             itemWorld.DestroySelf();
         }
         // Esto seguramente funcionará mas adelante
@@ -143,6 +170,36 @@ public class Player : MonoBehaviour
             Debug.Log("Next level trigger entered. Loading next level...");
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
+
+        // --- NUEVA LÓGICA PARA REPRODUCIR SONIDO AL ENTRAR EN UN TRIGGER ESPECÍFICO ---
+
+        // 1. Opcion: Usar un Tag para identificar el objeto que emite sonido
+        if (other.CompareTag("soundObject")) // Asegúrate de que tu GameObject tenga este Tag
+        {
+            AudioSource objectAudioSource = other.GetComponent<AudioSource>();
+            if (objectAudioSource != null && !objectAudioSource.isPlaying) // Solo si no está reproduciendo ya
+            {
+                objectAudioSource.Play();
+                Debug.Log($"Sonido del objeto '{other.name}' iniciado.");
+            }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        // --- NUEVA LÓGICA PARA DETENER SONIDO AL SALIR DE UN TRIGGER ESPECÍFICO ---
+
+        // Puedes detener el sonido si el jugador se aleja
+        if (other.CompareTag("soundObject"))
+        {
+            AudioSource objectAudioSource = other.GetComponent<AudioSource>();
+            if (objectAudioSource != null && objectAudioSource.isPlaying)
+            {
+                objectAudioSource.Stop();
+                Debug.Log($"Sonido del objeto '{other.name}' detenido.");
+            }
+        }
+        // --- FIN DE LA NUEVA LÓGICA ---
     }
 
     private void HandleMovement()
@@ -156,7 +213,6 @@ public class Player : MonoBehaviour
         smoothedVelocity = Vector2.Lerp(smoothedVelocity, targetVelocity, movementResponsiveness * Time.deltaTime);
         GetComponent<Rigidbody2D>().linearVelocity = smoothedVelocity;
 
-
         // Girar sprite según la dirección horizontal
         if (moveInput.x > 0.01f)
             spriteRenderer.flipX = false;
@@ -166,14 +222,37 @@ public class Player : MonoBehaviour
         if (moveInput != Vector2.zero)
         {
             lastMoveDirection = moveInput;
-            isWalking = true; // Set walking state to true when there is movement input
-            isSprinting = sprint; // Set sprinting state based on input
-
+            isWalking = true;
+            isSprinting = sprint;
+            if (audioSource != null)
+            {
+                if (isSprinting && sprintSound != null)
+                {
+                    if (Time.time >= nextSprintSoundTime)
+                    {
+                        audioSource.PlayOneShot(sprintSound);
+                        nextSprintSoundTime = Time.time + sprintSoundDelay;
+                    }
+                }
+                else if (isWalking && walkSound != null)
+                {
+                    if (Time.time >= nextWalkSoundTime)
+                    {
+                        audioSource.PlayOneShot(walkSound);
+                        nextWalkSoundTime = Time.time + walkSoundDelay;
+                    }
+                }
+            }
         }
         else
         {
-            isWalking = false; // Set walking state to false when there is no movement input
-            isSprinting = false; // Set sprinting state to false when there is no movement input
+            isWalking = false;
+            isSprinting = false;
+            // Solo detener sonidos de pasos, no efectos
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
         }
     }
 
