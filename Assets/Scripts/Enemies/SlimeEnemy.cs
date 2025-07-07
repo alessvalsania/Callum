@@ -205,8 +205,6 @@ public class SlimeEnemy : MonoBehaviour
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
         this.enabled = false; // Desactiva el script para evitar lógica extra
-
-        
     }
 
     // Llamado por un Animation Event al final de la animación de muerte

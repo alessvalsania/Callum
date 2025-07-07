@@ -168,7 +168,7 @@ public class Player : MonoBehaviour
         {
             // Load the next level or scene
             Debug.Log("Next level trigger entered. Loading next level...");
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            SceneManager.LoadScene("Mine");
         }
 
         // --- NUEVA LÓGICA PARA REPRODUCIR SONIDO AL ENTRAR EN UN TRIGGER ESPECÍFICO ---

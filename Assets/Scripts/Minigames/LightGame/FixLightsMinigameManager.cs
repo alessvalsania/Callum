@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic; // Necesario para List
-using TMPro; // Si usas TextMeshPro para el mensaje de éxito
+using TMPro; // Si usas TextMeshPro para el mensaje de ï¿½xito
 
 public class FixLightsMinigameManager : MonoBehaviour
 {
@@ -10,22 +10,24 @@ public class FixLightsMinigameManager : MonoBehaviour
     // Referencia al GameObject del Canvas/Panel del minijuego (para ocultarlo al completar)
     [SerializeField] private GameObject minigameCanvas;
 
-    // Referencia a un TextMeshProUGUI (o Text Legacy) para mostrar el mensaje de éxito
+    // Referencia a un TextMeshProUGUI (o Text Legacy) para mostrar el mensaje de ï¿½xito
     [SerializeField] private TextMeshProUGUI successMessageText; // O Text si no usas TMPro
-    [SerializeField] private GameObject successMessagePanel; // Un panel para el mensaje de éxito
+    [SerializeField] private GameObject successMessagePanel; // Un panel para el mensaje de ï¿½xito
+    [SerializeField] private GameObject door; // La puerta que se abrirÃ¡ al completar el minijuego
+
 
     void Start()
     {
         // Inicializa el estado de los interruptores de forma aleatoria (o predefinida)
         InitializeSwitches();
 
-        // Suscríbete al evento OnSwitchToggled de cada interruptor
+        // Suscrï¿½bete al evento OnSwitchToggled de cada interruptor
         foreach (LightSwitch ls in allLightSwitches)
         {
             ls.OnSwitchToggled += OnLightSwitchToggled;
         }
 
-        // Asegúrate de que el mensaje de éxito esté oculto al inicio
+        // Asegï¿½rate de que el mensaje de ï¿½xito estï¿½ oculto al inicio
         if (successMessagePanel != null)
         {
             successMessagePanel.SetActive(false);
@@ -34,14 +36,14 @@ public class FixLightsMinigameManager : MonoBehaviour
 
     private void InitializeSwitches()
     {
-        // Puedes establecer un patrón inicial aquí, por ejemplo, que algunos estén encendidos y otros apagados
+        // Puedes establecer un patrï¿½n inicial aquï¿½, por ejemplo, que algunos estï¿½n encendidos y otros apagados
         // Para simplificar, vamos a asumir que necesitas encenderlos todos.
-        // Podrías randomizar el estado inicial de cada uno si quieres más variedad:
+        // Podrï¿½as randomizar el estado inicial de cada uno si quieres mï¿½s variedad:
         // foreach (LightSwitch ls in allLightSwitches)
         // {
         //     if (Random.value > 0.5f)
         //     {
-        //         ls.ToggleSwitch(); // Esto cambiará su estado inicial
+        //         ls.ToggleSwitch(); // Esto cambiarï¿½ su estado inicial
         //     }
         // }
     }
@@ -65,7 +67,7 @@ public class FixLightsMinigameManager : MonoBehaviour
 
         if (allLightsOn)
         {
-            Debug.Log("¡Minijuego completado!");
+            Debug.Log("ï¿½Minijuego completado!");
             CompleteMinigame();
         }
     }
@@ -74,15 +76,15 @@ public class FixLightsMinigameManager : MonoBehaviour
     {
         Debug.Log("Iniciando CompleteMinigame()...");
 
-        // 1. Iniciar la coroutine del mensaje de éxito PRIMERO
+        // 1. Iniciar la coroutine del mensaje de ï¿½xito PRIMERO
         if (successMessagePanel != null)
         {
             successMessagePanel.SetActive(true);
             if (successMessageText != null)
             {
-                successMessageText.text = "¡Luces arregladas! ¡Misión cumplida!";
+                successMessageText.text = "ï¿½Luces arregladas! ï¿½Misiï¿½n cumplida!";
             }
-            // Inicia la coroutine para ocultar el mensaje de éxito
+            // Inicia la coroutine para ocultar el mensaje de ï¿½xito
             StartCoroutine(HideSuccessMessageAfterDelay(3f));
             Debug.Log("successMessagePanel mostrado y coroutine iniciada.");
         }
@@ -91,35 +93,40 @@ public class FixLightsMinigameManager : MonoBehaviour
             Debug.LogError("successMessagePanel es null en CompleteMinigame().");
         }
 
-        // 2. Desactivar la interacción de los interruptores (opcional, si quieres que no se puedan volver a clicar)
+        // 2. Desactivar la interacciï¿½n de los interruptores (opcional, si quieres que no se puedan volver a clicar)
         foreach (LightSwitch ls in allLightSwitches)
         {
             if (ls != null)
             {
-                ls.enabled = false; // Desactiva el script para que no respondan a más clics
+                ls.enabled = false; // Desactiva el script para que no respondan a mï¿½s clics
                 Debug.Log(ls.name + " script deshabilitado.");
             }
         }
 
         // 3. Finalmente, oculta el canvas del minijuego.
-        // Asegúrate de que el minigameCanvas no sea el mismo GameObject que contiene este script.
+        // Asegï¿½rate de que el minigameCanvas no sea el mismo GameObject que contiene este script.
         // Si lo es, la coroutine debe ser iniciada ANTES de desactivar el GameObject.
         if (minigameCanvas != null)
         {
-            // Solo desactiva el canvas si este script NO está en el mismo GameObject que minigameCanvas.
-            // Si este script (FixLightsMinigameManager) está en el GameObject 'Panel' y 'Panel' es tu minigameCanvas,
-            // entonces desactivarlo aquí causaría que la coroutine se detenga.
-            // Asumimos que FixLightsMinigameManager está en un Panel HIJO o en el mismo Canvas,
+            // Solo desactiva el canvas si este script NO estï¿½ en el mismo GameObject que minigameCanvas.
+            // Si este script (FixLightsMinigameManager) estï¿½ en el GameObject 'Panel' y 'Panel' es tu minigameCanvas,
+            // entonces desactivarlo aquï¿½ causarï¿½a que la coroutine se detenga.
+            // Asumimos que FixLightsMinigameManager estï¿½ en un Panel HIJO o en el mismo Canvas,
             // y que el Canvas es el que se desactiva.
             minigameCanvas.SetActive(false);
             Debug.Log("minigameCanvas ocultado.");
+            if (door != null)
+            {
+                Destroy(door);
+
+            }
         }
         else
         {
             Debug.LogError("minigameCanvas es null en CompleteMinigame().");
         }
 
-        // Puedes añadir lógica adicional aquí, como desbloquear una puerta, etc.
+        // Puedes aï¿½adir lï¿½gica adicional aquï¿½, como desbloquear una puerta, etc.
     }
 
     private System.Collections.IEnumerator HideSuccessMessageAfterDelay(float delay)
@@ -133,10 +140,10 @@ public class FixLightsMinigameManager : MonoBehaviour
 
     void OnDestroy()
     {
-        // Es una buena práctica desuscribirse de los eventos para evitar Memory Leaks
+        // Es una buena prï¿½ctica desuscribirse de los eventos para evitar Memory Leaks
         foreach (LightSwitch ls in allLightSwitches)
         {
-            if (ls != null) // Asegúrate de que el objeto no ha sido destruido ya
+            if (ls != null) // Asegï¿½rate de que el objeto no ha sido destruido ya
             {
                 ls.OnSwitchToggled -= OnLightSwitchToggled;
             }

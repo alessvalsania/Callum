@@ -14037,7 +14037,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 3df4cb2ead5a08141aa442726b43b6b4, type: 3}
+  m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 3df4cb2ead5a08141aa442726b43b6b4, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.1
@@ -22140,6 +22140,7 @@ MonoBehaviour:
   minigameCanvas: {fileID: 2133808869}
   successMessageText: {fileID: 0}
   successMessagePanel: {fileID: 0}
+  door: {fileID: 1379636952}
 --- !u!82 &992462217
 AudioSource:
   m_ObjectHideFlags: 0
@@ -45665,6 +45666,7 @@ MonoBehaviour:
   broomSprite: {fileID: 21300000, guid: f15c78b67c2aaf649827f8932c9ce3c9, type: 3}
   pickaxeSprite: {fileID: 21300000, guid: 5c003b07f81cd15408dbb6663630bebf, type: 3}
   mineralSprite: {fileID: 21300000, guid: 30217d36bdea4f049a00ff1011fe6030, type: 3}
+  smallMineralSprite: {fileID: 0}
 --- !u!4 &2131051461
 Transform:
   m_ObjectHideFlags: 0
@@ -48744,6 +48746,7 @@ MonoBehaviour:
   highlightEffect: {fileID: 0}
   spawningItemType: 7
   spawnMineralPoint: {fileID: 1512681526}
+  particleEffect: {fileID: 0}
   breakRockSound: {fileID: 8300000, guid: c21c01a5373255b4e82dc598ded19e49, type: 3}
   audioSource: {fileID: 6979700780976981727}
 --- !u!82 &6979700780976981727

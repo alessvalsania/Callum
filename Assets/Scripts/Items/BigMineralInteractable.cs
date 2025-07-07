@@ -56,7 +56,17 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
             audioSource.PlayOneShot(breakRockSound);
         }
         isBeingDestroyed = true;
+        // Ocultar el sprite y colisionador mientras suena el audio
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
+        {
+            sr.enabled = false;
+        }
+        foreach (var col in GetComponents<Collider2D>())
+        {
+            col.enabled = false;
+        }
         ItemWorld.DropItem(spawnMineralPoint.position, new Item { itemType = spawningItemType, amount = 1 });
+
         Destroy(gameObject, breakRockSound != null ? breakRockSound.length : 0f); // Espera a que termine el sonido
     }
 
