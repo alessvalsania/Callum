@@ -56,9 +56,12 @@ public class TypewriterTextController : MonoBehaviour
                 textComponents.Add(textComponent);
                 originalTexts.Add(textComponent.text);
 
-                // Ocultar el texto y el GameObject inicialmente
-                textComponent.text = "";
-                textComponent.gameObject.SetActive(false);
+                // Solo ocultar y limpiar si NO es Help
+                if (textComponent.gameObject.name != "Help")
+                {
+                    textComponent.text = "";
+                    textComponent.gameObject.SetActive(false);
+                }
             }
         }
 
@@ -157,8 +160,15 @@ public class TypewriterTextController : MonoBehaviour
         }
         else
         {
-            TextMeshProUGUI currentText = textComponents[currentTextIndex - 1];
-            currentText.gameObject.SetActive(false);
+            // Solo ocultar el texto si el índice es válido y no se llama 'Help'
+            if (currentTextIndex > 0 && currentTextIndex <= textComponents.Count)
+            {
+                TextMeshProUGUI currentText = textComponents[currentTextIndex - 1];
+                if (currentText.gameObject.name != "Help")
+                {
+                    currentText.gameObject.SetActive(false);
+                }
+            }
             // Iniciar el contador cuando termine la secuencia
             StartCountdown();
         }
@@ -170,6 +180,15 @@ public class TypewriterTextController : MonoBehaviour
         {
             Debug.LogWarning("No se asignó el TextMeshProUGUI para el contador");
             return;
+        }
+
+        // Ocultar el texto de ayuda 'Help' si existe
+        foreach (TextMeshProUGUI text in textComponents)
+        {
+            if (text.gameObject.name == "Help")
+            {
+                text.gameObject.SetActive(false);
+            }
         }
 
         countdownStarted = true;
@@ -369,5 +388,27 @@ public class TypewriterTextController : MonoBehaviour
         // {
         //     ResetSequence();
         // }
+
+        // Salta directo al contador con la tecla 'C'
+        if (!isComplete && Input.GetKeyDown(KeyCode.C))
+        {
+            SkipToCounter();
+        }
+    }
+
+    // Método para saltar directo al contador
+    private void SkipToCounter()
+    {
+        StopAllCoroutines();
+        // Oculta todos los textos excepto el que se llama 'Help'
+        foreach (TextMeshProUGUI text in textComponents)
+        {
+            if (text.gameObject.name != "Help")
+            {
+                text.gameObject.SetActive(false);
+            }
+        }
+        isComplete = true;
+        OnSequenceComplete();
     }
 }

@@ -64,6 +64,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
     <Compile Include="Assets\Cainos\Pixel Art Top Down - Basic\Script\SpriteColorAnimation.cs" />
     <Compile Include="Assets\Codemonkey\MonoBehaviours\PositionRendererSorter.cs" />
+    <Compile Include="Assets\Scripts\UI\MineralCounter.cs" />
     <Compile Include="Assets\Codemonkey\Utils\World_Sprite.cs" />
     <Compile Include="Assets\Scripts\Inventory\UI_Inventory.cs" />
     <Compile Include="Assets\Scripts\PickObject.cs" />

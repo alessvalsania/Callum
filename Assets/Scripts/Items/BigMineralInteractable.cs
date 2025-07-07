@@ -47,7 +47,7 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
     {
         if (particleEffect != null)
         {
-            Debug.Log($"Instanciando efecto de partículas en {gameObject.name}");
+            // Debug.Log($"Instanciando efecto de partículas en {gameObject.name}");
             Instantiate(particleEffect, transform.position, Quaternion.identity);
         }
         // Reproducir sonido de romper piedra
@@ -66,7 +66,11 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
             col.enabled = false;
         }
         ItemWorld.DropItem(spawnMineralPoint.position, new Item { itemType = spawningItemType, amount = 1 });
-
+        MineralCounter mineralCounterController = FindFirstObjectByType<MineralCounter>();
+        if (mineralCounterController)
+        {
+            mineralCounterController.AddMineral();
+        }
         Destroy(gameObject, breakRockSound != null ? breakRockSound.length : 0f); // Espera a que termine el sonido
     }
 
@@ -90,7 +94,7 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
 
         // Cambiar color del sprite o agregar outline
         SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-        Debug.Log($"SpriteRenderers encontrados: {spriteRenderers.Length}");
+        // Debug.Log($"SpriteRenderers encontrados: {spriteRenderers.Length}");
         if (spriteRenderers.Length > 1)
         {
             // Cambiar el color del primer SpriteRenderer encontrado
@@ -140,4 +144,3 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         interactText = newText;
     }
 }
-

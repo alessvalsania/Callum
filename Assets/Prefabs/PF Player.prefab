@@ -296,16 +296,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d878ed08782f43842b99b163739d49d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioSource: {fileID: 0}
+  sfxAudioSource: {fileID: 0}
+  walkSound: {fileID: 0}
+  sprintSound: {fileID: 0}
+  walkSoundDelay: 0.3
+  sprintSoundDelay: 0.2
+  soundProximityThreshold: 1
+  pickupSound: {fileID: 0}
   uiInventory: {fileID: 0}
+  uiBatteryHealth: {fileID: 0}
   gameInput: {fileID: 0}
   itemVisual: {fileID: 0}
   animator: {fileID: 0}
+  maxHealth: 4
+  health: 0
   moveSpeed: 5
   sprintMultiplier: 1.5
   movementResponsiveness: 10
   interactableLayerMask:
     serializedVersion: 2
     m_Bits: 0
+  attackCooldown: 0.5
+  attackDamage: 1
+  attackSpeed: 1
+  attackRange: 1.2
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  attackWaveLineRenderer: {fileID: 0}
+  attackWaveShowTime: 0.15
+  attackWaveSegments: 64
 --- !u!95 &2389866497931124684
 Animator:
   serializedVersion: 7

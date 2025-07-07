@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
@@ -54,6 +55,11 @@ public class Player : MonoBehaviour
     [SerializeField] private float attackRange = 1.2f;
     [SerializeField] private LayerMask enemyLayerMask; // Layer mask to filter enemy
 
+    [Header("Attack Visuals")]
+    public LineRenderer attackWaveLineRenderer; // Asigna un LineRenderer en el inspector
+    public float attackWaveShowTime = 0.15f;
+    public int attackWaveSegments = 64;
+    private Coroutine attackWaveCoroutine;
 
     // Singleton instance for easy access to the Player object
     public static Player Instance { get; private set; }
@@ -224,6 +230,10 @@ public class Player : MonoBehaviour
             lastMoveDirection = moveInput;
             isWalking = true;
             isSprinting = sprint;
+            if (isSprinting)
+            {
+                isWalking = false; // Si está corriendo, no está caminando
+            }
             if (audioSource != null)
             {
                 if (isSprinting && sprintSound != null)
@@ -343,6 +353,7 @@ public class Player : MonoBehaviour
     public void TryAttack()
     {
         Debug.Log("Player is attacking with item: " + inventory.GetSelectedItem().itemType);
+        animator.SetTrigger("Attack");
         Vector2 attackPos = (Vector2)transform.position + (Vector2)lastMoveDirection.normalized * attackRange * 0.5f;
         Collider2D hit = Physics2D.OverlapCircle(attackPos, attackRange, enemyLayerMask);
         if (hit != null)
@@ -353,6 +364,32 @@ public class Player : MonoBehaviour
                 slime.Die();
             }
         }
+        // Mostrar onda visual con LineRenderer
+        ShowAttackWaveLine(attackPos, attackRange);
+    }
+
+    private void ShowAttackWaveLine(Vector2 pos, float range)
+    {
+        if (attackWaveCoroutine != null) StopCoroutine(attackWaveCoroutine);
+        if (attackWaveLineRenderer != null)
+        {
+            attackWaveLineRenderer.positionCount = attackWaveSegments + 1;
+            for (int i = 0; i <= attackWaveSegments; i++)
+            {
+                float angle = i * 2 * Mathf.PI / attackWaveSegments;
+                float x = Mathf.Cos(angle) * range + pos.x;
+                float y = Mathf.Sin(angle) * range + pos.y;
+                attackWaveLineRenderer.SetPosition(i, new Vector3(x, y, 0));
+            }
+            attackWaveLineRenderer.enabled = true;
+            attackWaveCoroutine = StartCoroutine(HideAttackWaveLineAfterDelay(attackWaveShowTime));
+        }
+    }
+
+    private System.Collections.IEnumerator HideAttackWaveLineAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (attackWaveLineRenderer != null) attackWaveLineRenderer.enabled = false;
     }
 
     // Opcional: dibuja el rango de ataque en el editor

@@ -19,5 +19,17 @@ public class GameOverScript : MonoBehaviour
             // Reiniciar el juego o cargar la escena de inicio
             SceneManager.LoadScene(0);
         }
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+
+            SceneManager.LoadScene("Mine");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            // Salir del juego
+            Application.Quit();
+        }
     }
 }
