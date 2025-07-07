@@ -15,6 +15,8 @@ public class Player : MonoBehaviour
     [Header("Interaction Sound Settings")]
     [SerializeField] private float soundProximityThreshold = 1f; // Distancia mínima para activar el sonido de un objeto
     [SerializeField] private AudioClip pickupSound; // Sonido al recoger objeto
+    [SerializeField] private AudioClip attackSound; // Sonido al atacar
+    [SerializeField] private AudioClip hurtSound;   // Sonido al recibir daño
 
     private float nextWalkSoundTime;
     private float nextSprintSoundTime;
@@ -90,6 +92,19 @@ public class Player : MonoBehaviour
         if (audioSource == null)
         {
             Debug.LogWarning("AudioSource component is not assigned to Player. Add an AudioSource component to the Player GameObject to enable footstep sounds.");
+        }
+        if (sfxAudioSource == null)
+        {
+            sfxAudioSource = GetComponentInChildren<AudioSource>(true);
+            if (sfxAudioSource != null && sfxAudioSource != audioSource)
+            {
+                Debug.Log("sfxAudioSource encontrado automáticamente en un hijo.");
+            }
+            else
+            {
+                Debug.LogWarning("No se encontró sfxAudioSource en los hijos. Asigna un AudioSource diferente al de pasos para efectos en el Inspector o crea un hijo con un AudioSource.");
+                sfxAudioSource = null;
+            }
         }
     }
 
@@ -253,6 +268,7 @@ public class Player : MonoBehaviour
             {
                 audioSource.Stop();
             }
+            // No detener sfxAudioSource aquí
         }
     }
 
@@ -328,6 +344,15 @@ public class Player : MonoBehaviour
     {
         health -= amount;
         if (health < 0) health = 0;
+        if (sfxAudioSource != null && hurtSound != null)
+        {
+            Debug.Log($"[TakeDamage] sfxAudioSource asignado, volumen: {sfxAudioSource.volume}, mute: {sfxAudioSource.mute}");
+            sfxAudioSource.PlayOneShot(hurtSound);
+        }
+        else
+        {
+            Debug.LogWarning("[TakeDamage] sfxAudioSource o hurtSound no asignado");
+        }
         if (CameraShake.Instance != null)
         {
             CameraShake.Instance.Shake(0.3f, 5f); // Duración y magnitud (ajusta a tu gusto)
@@ -342,6 +367,15 @@ public class Player : MonoBehaviour
 
     public void TryAttack()
     {
+        if (sfxAudioSource != null && attackSound != null)
+        {
+            Debug.Log($"[TryAttack] sfxAudioSource asignado, volumen: {sfxAudioSource.volume}, mute: {sfxAudioSource.mute}");
+            sfxAudioSource.PlayOneShot(attackSound);
+        }
+        else
+        {
+            Debug.LogWarning("[TryAttack] sfxAudioSource o attackSound no asignado");
+        }
         Debug.Log("Player is attacking with item: " + inventory.GetSelectedItem().itemType);
         Vector2 attackPos = (Vector2)transform.position + (Vector2)lastMoveDirection.normalized * attackRange * 0.5f;
         Collider2D hit = Physics2D.OverlapCircle(attackPos, attackRange, enemyLayerMask);
