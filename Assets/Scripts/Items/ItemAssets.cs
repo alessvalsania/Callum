@@ -24,6 +24,7 @@ public class ItemAssets : MonoBehaviour
     [SerializeField] private Sprite broomSprite;
     [SerializeField] private Sprite pickaxeSprite;
     [SerializeField] private Sprite mineralSprite;
+    [SerializeField] private Sprite smallMineralSprite;
 
 
 
@@ -47,6 +48,8 @@ public class ItemAssets : MonoBehaviour
                 return pickaxeSprite;
             case Item.ItemType.Mineral:
                 return mineralSprite;
+            case Item.ItemType.SmallMineral:
+                return smallMineralSprite;
             default:
                 return null;
         }

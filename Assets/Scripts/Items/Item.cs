@@ -13,7 +13,8 @@ public class Item
         MedKit,
         Broom,
         Pickaxe,
-        Mineral
+        Mineral,
+        SmallMineral
     }
 
     public ItemType itemType;
@@ -34,6 +35,7 @@ public class Item
             case ItemType.ManaPotion:
             case ItemType.Coin:
             case ItemType.Mineral:
+            case ItemType.SmallMineral:
                 return true;
             case ItemType.Sword:
             case ItemType.MedKit:

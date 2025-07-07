@@ -4,11 +4,10 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-
     // INVENTORY VARIABLES
     private Inventory inventory;
     [SerializeField] UI_Inventory uiInventory;
-
+    [SerializeField] UI_BatteryHealth uiBatteryHealth;
 
     [SerializeField] private GameInput gameInput; // Agregar esta línea
     [SerializeField] public GameObject itemVisual;
@@ -18,7 +17,10 @@ public class Player : MonoBehaviour
     private SpriteRenderer spriteRenderer; // Reference to the SpriteRenderer component for visual feedback
     public Animator animator;
 
-
+    [Header("Health System")]
+    public int maxHealth = 4;
+    public int health;
+    public event Action<int> OnHealthChanged;
 
     // MOVEMENT VARIABLES
     private Vector3 lastMoveDirection;
@@ -29,6 +31,13 @@ public class Player : MonoBehaviour
 
     private IInteractable currentInteractable; // Reference to the interactable object in front of the player
     [SerializeField] private LayerMask interactableLayerMask; // Layer mask to filter interactable objects
+
+    [SerializeField] private float attackCooldown = 0.5f;
+    [SerializeField] private float attackDamage = 1;
+    [SerializeField] private float attackSpeed = 1f;
+    [SerializeField] private float attackRange = 1.2f;
+    [SerializeField] private LayerMask enemyLayerMask; // Layer mask to filter enemy
+
 
     // Singleton instance for easy access to the Player object
     public static Player Instance { get; private set; }
@@ -54,6 +63,12 @@ public class Player : MonoBehaviour
         {
             Debug.LogError("SpriteRenderer component is not assigned in Player script. Please assign it in the inspector.");
         }
+        health = maxHealth;
+        if (uiBatteryHealth != null)
+        {
+            uiBatteryHealth.SetHealth(health);
+        }
+        OnHealthChanged += (h) => { if (uiBatteryHealth != null) uiBatteryHealth.SetHealth(h); Debug.Log(h); };
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -88,6 +103,11 @@ public class Player : MonoBehaviour
     private void OnInteractAction(object sender, EventArgs e)
     {
         Item selectedItem = inventory.GetSelectedItem();
+        if (selectedItem?.itemType == Item.ItemType.Sword)
+        {
+            TryAttack();
+            return;
+        }
         string itemInHand = selectedItem != null ? selectedItem.itemType.ToString() : "None";
         string objectTouching = currentInteractable != null ? currentInteractable.GetInteractText() : "None";
 
@@ -225,7 +245,44 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void TakeDamage(int amount)
+    {
+        health -= amount;
+        if (health < 0) health = 0;
+        if (CameraShake.Instance != null)
+        {
+            CameraShake.Instance.Shake(0.3f, 5f); // Duración y magnitud (ajusta a tu gusto)
+        }
+        OnHealthChanged?.Invoke(health);
+        if (health <= 0)
+        {
+            // Cambia a la escena GameOver
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+        }
+    }
 
+    public void TryAttack()
+    {
+        Debug.Log("Player is attacking with item: " + inventory.GetSelectedItem().itemType);
+        Vector2 attackPos = (Vector2)transform.position + (Vector2)lastMoveDirection.normalized * attackRange * 0.5f;
+        Collider2D hit = Physics2D.OverlapCircle(attackPos, attackRange, enemyLayerMask);
+        if (hit != null)
+        {
+            SlimeEnemy slime = hit.GetComponent<SlimeEnemy>();
+            if (slime != null)
+            {
+                slime.Die();
+            }
+        }
+    }
+
+    // Opcional: dibuja el rango de ataque en el editor
+    void OnDrawGizmosSelected()
+    {
+        Vector2 attackPos = (Vector2)transform.position + (Vector2)lastMoveDirection.normalized * attackRange * 0.5f;
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPos, attackRange);
+    }
 
     private void OnPreviousAction(object sender, EventArgs e)
     {
@@ -251,6 +308,5 @@ public class Player : MonoBehaviour
     {
         return currentInteractable;
     }
-
 }
 

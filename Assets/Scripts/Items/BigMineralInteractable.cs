@@ -8,6 +8,7 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
     [SerializeField] private GameObject highlightEffect; // Opcional: efecto visual cuando está en rango
     [SerializeField] private Item.ItemType spawningItemType; // Opcional: efecto visual cuando está en rango
     [SerializeField] private Transform spawnMineralPoint; // Indica si el objeto está activo para interactuar
+    [SerializeField] private GameObject particleEffect; // Efecto de partículas al interactuar
 
     public void Interact(Player player)
     {
@@ -40,6 +41,11 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
 
     private void PerformSpecialInteraction(Player player)
     {
+        if (particleEffect != null)
+        {
+            Debug.Log($"Instanciando efecto de partículas en {gameObject.name}");
+            Instantiate(particleEffect, transform.position, Quaternion.identity);
+        }
         ItemWorld.DropItem(spawnMineralPoint.position, new Item { itemType = spawningItemType, amount = 1 });
         Destroy(gameObject); // Destruir el objeto interactuable después de la interacción
     }
@@ -65,7 +71,7 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         // Cambiar color del sprite o agregar outline
         SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
         Debug.Log($"SpriteRenderers encontrados: {spriteRenderers.Length}");
-        if (spriteRenderers.Length > 0)
+        if (spriteRenderers.Length > 1)
         {
             // Cambiar el color del primer SpriteRenderer encontrado
             if (player.GetInventory().HasItem(requiredItemType))
@@ -94,7 +100,7 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
 
         // Restaurar color original
         SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-        if (spriteRenderers.Length > 0)
+        if (spriteRenderers.Length > 1)
         {
             // Restaurar el color del primer SpriteRenderer encontrado
             spriteRenderers[1].color = Color.white; // Restaurar al color original

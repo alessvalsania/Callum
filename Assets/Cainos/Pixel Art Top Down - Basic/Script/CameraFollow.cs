@@ -26,7 +26,13 @@ namespace Cainos.PixelArtTopDown_Basic
             if (target == null) return;
 
             targetPos = target.position + offset;
-            transform.position = Vector3.Lerp(transform.position, targetPos, lerpSpeed * Time.deltaTime);
+
+            // Suma el offset del shake si existe
+            Vector3 shakeOffset = Vector3.zero;
+            if (CameraShake.Instance != null)
+                shakeOffset = CameraShake.Instance.ShakeOffset;
+
+            transform.position = Vector3.Lerp(transform.position, targetPos + shakeOffset, lerpSpeed * Time.deltaTime);
         }
 
     }
