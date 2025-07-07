@@ -9,7 +9,14 @@ public class DoorMinigame : MonoBehaviour, IInteractable
     // AÑADE ESTA LÍNEA: Referencia al GameObject de tu Canvas o Panel
     // Asegúrate de arrastrar el Canvas (o el Panel dentro) a esta variable en el Inspector de Unity.
     [SerializeField] private GameObject minigameCanvas; // O un Panel, si es lo que quieres mostrar/ocultar
+    [SerializeField] private GameObject minigameTextUI; // UI para el texto de interacción
+    [SerializeField] private string correctItemMessage = "Presiona F para interactuar";
+    [SerializeField] private string wrongItemMessage = "Falta encontrar el mineral para activar el sistema";
+    private TMPro.TextMeshProUGUI minigameText;
 
+    private bool canOpenMinigame = false;
+    private bool playerInside = false;
+    private Player currentPlayer;
 
     public string GetInteractText()
     {
@@ -104,6 +111,13 @@ public class DoorMinigame : MonoBehaviour, IInteractable
         {
             minigameCanvas.SetActive(false);
         }
+        // Obtener el componente TextMeshProUGUI del UI
+        if (minigameTextUI != null)
+        {
+            minigameText = minigameTextUI.GetComponent<TMPro.TextMeshProUGUI>();
+            if (minigameText == null)
+                minigameText = minigameTextUI.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        }
     }
 
     // Update is called once per frame
@@ -112,5 +126,59 @@ public class DoorMinigame : MonoBehaviour, IInteractable
         // Si necesitas una forma de cerrar el minijuego, podrías añadir algo aquí,
         // por ejemplo, si el minigameCanvas está activo y se presiona una tecla.
         // Sin embargo, lo más común es que el propio script del minijuego lo cierre.
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            canOpenMinigame = true;
+            playerInside = true;
+            currentPlayer = other.GetComponent<Player>();
+            UpdateMinigameText();
+            if (minigameTextUI != null)
+                minigameTextUI.SetActive(true);
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            canOpenMinigame = false;
+            playerInside = false;
+            currentPlayer = null;
+            if (minigameTextUI != null)
+                minigameTextUI.SetActive(false);
+        }
+    }
+
+    private void UpdateMinigameText()
+    {
+        if (minigameText == null || currentPlayer == null) return;
+
+        Item playerItem = currentPlayer.GetSelectedItem();
+
+        if (requiresSpecificItem)
+        {
+            if (playerItem != null && playerItem.itemType == requiredItemType)
+            {
+                // El jugador tiene el item correcto
+                minigameText.text = correctItemMessage;
+                minigameText.color = Color.green; // Color verde para indicar que puede interactuar
+            }
+            else
+            {
+                // El jugador no tiene el item correcto o no tiene ningún item
+                minigameText.text = wrongItemMessage;
+                minigameText.color = Color.red; // Color rojo para indicar que no puede interactuar
+            }
+        }
+        else
+        {
+            // No requiere item específico
+            minigameText.text = correctItemMessage;
+            minigameText.color = Color.white;
+        }
     }
 }

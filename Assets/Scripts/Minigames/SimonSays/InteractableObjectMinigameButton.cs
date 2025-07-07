@@ -146,6 +146,7 @@ public class InteractableObject : MonoBehaviour, IInteractable
         if (minigameUI != null)
         {
             minigameUI.SetActive(true);
+            Debug.Log("Canvas del minijuego mostrado.");
             if (minigameTextUI != null)
                 minigameTextUI.SetActive(false);
         }
