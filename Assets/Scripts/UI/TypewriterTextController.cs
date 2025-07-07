@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class TypewriterTextController : MonoBehaviour
@@ -15,15 +16,26 @@ public class TypewriterTextController : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip typingSound;
 
+    [Header("Configuración del Contador")]
+    [SerializeField] private float countdownTime = 120f; // 2 minutos en segundos
+    [SerializeField] private TextMeshProUGUI countdownText; // Asignar en el inspector
+    [SerializeField] private TextMeshProUGUI gameOverText; // Texto "Perdiste"
+    [SerializeField] private string gameOverMessage = "¡PERDISTE!";
+    [SerializeField] private string nextSceneName = ""; // Nombre de la siguiente escena (opcional)
+
     private List<TextMeshProUGUI> textComponents = new List<TextMeshProUGUI>();
     private List<string> originalTexts = new List<string>();
     private int currentTextIndex = 0;
     private bool isTyping = false;
     private bool isComplete = false;
+    private bool countdownStarted = false;
+    private bool gameOver = false;
+    private float currentCountdownTime;
 
     private void Start()
     {
         InitializeTextComponents();
+        InitializeCountdown();
 
         if (autoStart)
         {
@@ -33,20 +45,43 @@ public class TypewriterTextController : MonoBehaviour
 
     private void InitializeTextComponents()
     {
-        // Obtener todos los componentes TextMeshProUGUI en los hijos
+        // Obtener todos los componentes TextMeshProUGUI en los hijos (excluyendo el contador y game over)
         TextMeshProUGUI[] childTexts = GetComponentsInChildren<TextMeshProUGUI>(true);
 
         foreach (TextMeshProUGUI textComponent in childTexts)
         {
-            textComponents.Add(textComponent);
-            originalTexts.Add(textComponent.text);
+            // No incluir el texto del contador ni el de game over en la secuencia
+            if (textComponent != countdownText && textComponent != gameOverText)
+            {
+                textComponents.Add(textComponent);
+                originalTexts.Add(textComponent.text);
 
-            // Ocultar el texto y el GameObject inicialmente
-            textComponent.text = "";
-            textComponent.gameObject.SetActive(false);
+                // Solo ocultar y limpiar si NO es Help
+                if (textComponent.gameObject.name != "Help")
+                {
+                    textComponent.text = "";
+                    textComponent.gameObject.SetActive(false);
+                }
+            }
         }
 
         Debug.Log($"Se encontraron {textComponents.Count} componentes de texto");
+    }
+
+    private void InitializeCountdown()
+    {
+        currentCountdownTime = countdownTime;
+
+        // Ocultar el contador y el texto de game over al inicio
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(false);
+        }
+
+        if (gameOverText != null)
+        {
+            gameOverText.gameObject.SetActive(false);
+        }
     }
 
     public void StartTypewriterSequence()
@@ -117,12 +152,115 @@ public class TypewriterTextController : MonoBehaviour
 
     private void OnSequenceComplete()
     {
-        Debug.Log("Secuencia de texto completada");
+        Debug.Log("Secuencia de texto completada - Iniciando contador");
 
         if (loop)
         {
             StartCoroutine(RestartSequence());
         }
+        else
+        {
+            // Solo ocultar el texto si el índice es válido y no se llama 'Help'
+            if (currentTextIndex > 0 && currentTextIndex <= textComponents.Count)
+            {
+                TextMeshProUGUI currentText = textComponents[currentTextIndex - 1];
+                if (currentText.gameObject.name != "Help")
+                {
+                    currentText.gameObject.SetActive(false);
+                }
+            }
+            // Iniciar el contador cuando termine la secuencia
+            StartCountdown();
+        }
+    }
+
+    private void StartCountdown()
+    {
+        if (countdownText == null)
+        {
+            Debug.LogWarning("No se asignó el TextMeshProUGUI para el contador");
+            return;
+        }
+
+        // Ocultar el texto de ayuda 'Help' si existe
+        foreach (TextMeshProUGUI text in textComponents)
+        {
+            if (text.gameObject.name == "Help")
+            {
+                text.gameObject.SetActive(false);
+            }
+        }
+
+        countdownStarted = true;
+        countdownText.gameObject.SetActive(true);
+        StartCoroutine(CountdownCoroutine());
+    }
+
+    private IEnumerator CountdownCoroutine()
+    {
+        while (currentCountdownTime > 0 && !gameOver)
+        {
+            // Actualizar el texto del contador
+            UpdateCountdownDisplay();
+
+            yield return new WaitForSeconds(1f);
+            currentCountdownTime--;
+        }
+
+        // Si el tiempo se agotó
+        if (currentCountdownTime <= 0 && !gameOver)
+        {
+            ShowGameOver();
+        }
+    }
+
+    private void UpdateCountdownDisplay()
+    {
+        if (countdownText != null)
+        {
+            int minutes = Mathf.FloorToInt(currentCountdownTime / 60f);
+            int seconds = Mathf.FloorToInt(currentCountdownTime % 60f);
+            countdownText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
+    }
+
+    private void ShowGameOver()
+    {
+        gameOver = true;
+
+        // Ocultar el contador
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(false);
+        }
+
+        // Mostrar mensaje de game over
+        if (gameOverText != null)
+        {
+            gameOverText.gameObject.SetActive(true);
+            gameOverText.text = gameOverMessage;
+        }
+
+        Debug.Log("¡Tiempo agotado! Game Over");
+        ChangeToNextScene();
+    }
+
+    // Método público para cambiar de escena (llamar desde otro script o botón)
+    public void ChangeToNextScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 2);
+    }
+
+    // Método público para cambiar de escena por índice
+    public void ChangeToNextScene(int sceneIndex)
+    {
+        SceneManager.LoadScene(sceneIndex);
+    }
+
+    // Método público para cambiar de escena por nombre
+    public void ChangeToNextScene(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
     }
 
     private IEnumerator RestartSequence()
@@ -209,6 +347,21 @@ public class TypewriterTextController : MonoBehaviour
             text.text = "";
         }
 
+        // Reiniciar contador
+        currentCountdownTime = countdownTime;
+        countdownStarted = false;
+        gameOver = false;
+
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(false);
+        }
+
+        if (gameOverText != null)
+        {
+            gameOverText.gameObject.SetActive(false);
+        }
+
         currentTextIndex = 0;
         isComplete = false;
         isTyping = false;
@@ -217,25 +370,45 @@ public class TypewriterTextController : MonoBehaviour
     // Propiedades para verificar el estado
     public bool IsTyping => isTyping;
     public bool IsComplete => isComplete;
+    public bool IsCountdownActive => countdownStarted && !gameOver;
+    public bool IsGameOver => gameOver;
+    public float RemainingTime => currentCountdownTime;
     public int CurrentTextIndex => currentTextIndex;
     public int TotalTexts => textComponents.Count;
 
     // Métodos para controlar desde el input del usuario
     private void Update()
     {
-        // Ejemplo: Presionar Espacio para saltar texto actual
-        if (Input.GetKeyDown(KeyCode.Space))
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     SkipCurrentText();
+        // }
+
+        // if (Input.GetKeyDown(KeyCode.R))
+        // {
+        //     ResetSequence();
+        // }
+
+        // Salta directo al contador con la tecla 'C'
+        if (!isComplete && Input.GetKeyDown(KeyCode.C))
         {
-            if (isTyping)
+            SkipToCounter();
+        }
+    }
+
+    // Método para saltar directo al contador
+    private void SkipToCounter()
+    {
+        StopAllCoroutines();
+        // Oculta todos los textos excepto el que se llama 'Help'
+        foreach (TextMeshProUGUI text in textComponents)
+        {
+            if (text.gameObject.name != "Help")
             {
-                SkipCurrentText();
+                text.gameObject.SetActive(false);
             }
         }
-
-        // Ejemplo: Presionar Enter para saltar toda la secuencia
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            SkipToEnd();
-        }
+        isComplete = true;
+        OnSequenceComplete();
     }
 }

@@ -1,17 +1,45 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
+    // SOUND VARIABLES
+    [Header("Sound Settings")] // Puedes usar un Header para organizar en el Inspector
+    [SerializeField] private AudioSource audioSource; // Componente AudioSource en el jugador
+    [SerializeField] private AudioSource sfxAudioSource; // Componente AudioSource en el jugador
+    [SerializeField] private AudioClip walkSound;     // Sonido para caminar
+    [SerializeField] private AudioClip sprintSound;   // Sonido para correr
+    [SerializeField] private float walkSoundDelay = 0.3f; // Retraso entre sonidos al caminar
+    [SerializeField] private float sprintSoundDelay = 0.2f; // Retraso entre sonidos al correr
+    [Header("Interaction Sound Settings")]
+    [SerializeField] private float soundProximityThreshold = 1f; // Distancia mínima para activar el sonido de un objeto
+    [SerializeField] private AudioClip pickupSound; // Sonido al recoger objeto
+    [SerializeField] private AudioClip attackSound; // Sonido al atacar
+    [SerializeField] private AudioClip hurtSound;   // Sonido al recibir daño
+
+    private float nextWalkSoundTime;
+    private float nextSprintSoundTime;
+
 
     // INVENTORY VARIABLES
     private Inventory inventory;
     [SerializeField] UI_Inventory uiInventory;
-
+    [SerializeField] UI_BatteryHealth uiBatteryHealth;
 
     [SerializeField] private GameInput gameInput; // Agregar esta línea
-    [SerializeField] private GameObject itemVisual;
+    [SerializeField] public GameObject itemVisual;
 
+    private bool isWalking = false; // Variable para controlar si el jugador está caminando
+    private bool isSprinting = false; // Variable para controlar si el jugador está corriendo
+    private SpriteRenderer spriteRenderer; // Reference to the SpriteRenderer component for visual feedback
+    public Animator animator;
+
+    [Header("Health System")]
+    public int maxHealth = 4;
+    public int health;
+    public event Action<int> OnHealthChanged;
 
     // MOVEMENT VARIABLES
     private Vector3 lastMoveDirection;
@@ -22,6 +50,18 @@ public class Player : MonoBehaviour
 
     private IInteractable currentInteractable; // Reference to the interactable object in front of the player
     [SerializeField] private LayerMask interactableLayerMask; // Layer mask to filter interactable objects
+
+    [SerializeField] private float attackCooldown = 0.5f;
+    [SerializeField] private float attackDamage = 1;
+    [SerializeField] private float attackSpeed = 1f;
+    [SerializeField] private float attackRange = 1.2f;
+    [SerializeField] private LayerMask enemyLayerMask; // Layer mask to filter enemy
+
+    [Header("Attack Visuals")]
+    public LineRenderer attackWaveLineRenderer; // Asigna un LineRenderer en el inspector
+    public float attackWaveShowTime = 0.15f;
+    public int attackWaveSegments = 64;
+    private Coroutine attackWaveCoroutine;
 
     // Singleton instance for easy access to the Player object
     public static Player Instance { get; private set; }
@@ -35,6 +75,42 @@ public class Player : MonoBehaviour
         else
         {
             Debug.LogWarning("There are multiple instances of Player");
+        }
+
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("Animator component is not assigned in Player script. Please assign it in the inspector.");
+        }
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("SpriteRenderer component is not assigned in Player script. Please assign it in the inspector.");
+        }
+        health = maxHealth;
+        if (uiBatteryHealth != null)
+        {
+            uiBatteryHealth.SetHealth(health);
+        }
+        OnHealthChanged += (h) => { if (uiBatteryHealth != null) uiBatteryHealth.SetHealth(h); Debug.Log(h); };
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            Debug.LogWarning("AudioSource component is not assigned to Player. Add an AudioSource component to the Player GameObject to enable footstep sounds.");
+        }
+        if (sfxAudioSource == null)
+        {
+            sfxAudioSource = GetComponentInChildren<AudioSource>(true);
+            if (sfxAudioSource != null && sfxAudioSource != audioSource)
+            {
+                Debug.Log("sfxAudioSource encontrado automáticamente en un hijo.");
+            }
+            else
+            {
+                Debug.LogWarning("No se encontró sfxAudioSource en los hijos. Asigna un AudioSource diferente al de pasos para efectos en el Inspector o crea un hijo con un AudioSource.");
+                sfxAudioSource = null;
+            }
         }
     }
 
@@ -60,6 +136,8 @@ public class Player : MonoBehaviour
     {
         HandleMovement();
         HandleInteractWithWorld();
+        animator.SetBool("isWalking", isWalking);
+        animator.SetBool("isSprinting", isSprinting);
 
         // Debug.Log("Player position: " + transform.position);
         // Debug.Log("Last move direction: " + lastMoveDirection);
@@ -68,6 +146,11 @@ public class Player : MonoBehaviour
     private void OnInteractAction(object sender, EventArgs e)
     {
         Item selectedItem = inventory.GetSelectedItem();
+        if (selectedItem?.itemType == Item.ItemType.Sword)
+        {
+            TryAttack();
+            return;
+        }
         string itemInHand = selectedItem != null ? selectedItem.itemType.ToString() : "None";
         string objectTouching = currentInteractable != null ? currentInteractable.GetInteractText() : "None";
 
@@ -92,13 +175,52 @@ public class Player : MonoBehaviour
             }
             Item item = itemWorld.GetItem();
             inventory.AddItem(item);
+            animator.SetTrigger("interact");
+            // Reproducir sonido de recogida usando el AudioSource de efectos
+            if (pickupSound != null && sfxAudioSource != null)
+            {
+                sfxAudioSource.PlayOneShot(pickupSound);
+            }
             itemWorld.DestroySelf();
         }
         // Esto seguramente funcionará mas adelante
         // // This is called when the collider enters the trigger
-        // if (other.CompareTag("Item"))
-        // {
-        // }
+        if (other.CompareTag("NextLevel"))
+        {
+            // Load the next level or scene
+            Debug.Log("Next level trigger entered. Loading next level...");
+            SceneManager.LoadScene("Mine");
+        }
+
+        // --- NUEVA LÓGICA PARA REPRODUCIR SONIDO AL ENTRAR EN UN TRIGGER ESPECÍFICO ---
+
+        // 1. Opcion: Usar un Tag para identificar el objeto que emite sonido
+        if (other.CompareTag("soundObject")) // Asegúrate de que tu GameObject tenga este Tag
+        {
+            AudioSource objectAudioSource = other.GetComponent<AudioSource>();
+            if (objectAudioSource != null && !objectAudioSource.isPlaying) // Solo si no está reproduciendo ya
+            {
+                objectAudioSource.Play();
+                Debug.Log($"Sonido del objeto '{other.name}' iniciado.");
+            }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        // --- NUEVA LÓGICA PARA DETENER SONIDO AL SALIR DE UN TRIGGER ESPECÍFICO ---
+
+        // Puedes detener el sonido si el jugador se aleja
+        if (other.CompareTag("soundObject"))
+        {
+            AudioSource objectAudioSource = other.GetComponent<AudioSource>();
+            if (objectAudioSource != null && objectAudioSource.isPlaying)
+            {
+                objectAudioSource.Stop();
+                Debug.Log($"Sonido del objeto '{other.name}' detenido.");
+            }
+        }
+        // --- FIN DE LA NUEVA LÓGICA ---
     }
 
     private void HandleMovement()
@@ -107,12 +229,56 @@ public class Player : MonoBehaviour
         bool sprint = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         float currentSpeed = moveSpeed * (sprint ? sprintMultiplier : 1f);
         Vector2 targetVelocity = moveInput * currentSpeed;
+
         // Smooth acceleration and deceleration
         smoothedVelocity = Vector2.Lerp(smoothedVelocity, targetVelocity, movementResponsiveness * Time.deltaTime);
         GetComponent<Rigidbody2D>().linearVelocity = smoothedVelocity;
+
+        // Girar sprite según la dirección horizontal
+        if (moveInput.x > 0.01f)
+            spriteRenderer.flipX = false;
+        else if (moveInput.x < -0.01f)
+            spriteRenderer.flipX = true;
+
         if (moveInput != Vector2.zero)
         {
             lastMoveDirection = moveInput;
+            isWalking = true;
+            isSprinting = sprint;
+            if (isSprinting)
+            {
+                isWalking = false; // Si está corriendo, no está caminando
+            }
+            if (audioSource != null)
+            {
+                if (isSprinting && sprintSound != null)
+                {
+                    if (Time.time >= nextSprintSoundTime)
+                    {
+                        audioSource.PlayOneShot(sprintSound);
+                        nextSprintSoundTime = Time.time + sprintSoundDelay;
+                    }
+                }
+                else if (isWalking && walkSound != null)
+                {
+                    if (Time.time >= nextWalkSoundTime)
+                    {
+                        audioSource.PlayOneShot(walkSound);
+                        nextWalkSoundTime = Time.time + walkSoundDelay;
+                    }
+                }
+            }
+        }
+        else
+        {
+            isWalking = false;
+            isSprinting = false;
+            // Solo detener sonidos de pasos, no efectos
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+            // No detener sfxAudioSource aquí
         }
     }
 
@@ -184,7 +350,89 @@ public class Player : MonoBehaviour
         }
     }
 
+    public void TakeDamage(int amount)
+    {
+        health -= amount;
+        if (health < 0) health = 0;
+        if (sfxAudioSource != null && hurtSound != null)
+        {
+            Debug.Log($"[TakeDamage] sfxAudioSource asignado, volumen: {sfxAudioSource.volume}, mute: {sfxAudioSource.mute}");
+            sfxAudioSource.PlayOneShot(hurtSound);
+        }
+        else
+        {
+            Debug.LogWarning("[TakeDamage] sfxAudioSource o hurtSound no asignado");
+        }
+        if (CameraShake.Instance != null)
+        {
+            CameraShake.Instance.Shake(0.3f, 5f); // Duración y magnitud (ajusta a tu gusto)
+        }
+        OnHealthChanged?.Invoke(health);
+        if (health <= 0)
+        {
+            // Cambia a la escena GameOver
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+        }
+    }
 
+    public void TryAttack()
+    {
+        if (sfxAudioSource != null && attackSound != null)
+        {
+            Debug.Log($"[TryAttack] sfxAudioSource asignado, volumen: {sfxAudioSource.volume}, mute: {sfxAudioSource.mute}");
+            sfxAudioSource.PlayOneShot(attackSound);
+        }
+        else
+        {
+            Debug.LogWarning("[TryAttack] sfxAudioSource o attackSound no asignado");
+        }
+        Debug.Log("Player is attacking with item: " + inventory.GetSelectedItem().itemType);
+        animator.SetTrigger("Attack");
+        Vector2 attackPos = (Vector2)transform.position + (Vector2)lastMoveDirection.normalized * attackRange * 0.5f;
+        Collider2D hit = Physics2D.OverlapCircle(attackPos, attackRange, enemyLayerMask);
+        if (hit != null)
+        {
+            SlimeEnemy slime = hit.GetComponent<SlimeEnemy>();
+            if (slime != null)
+            {
+                slime.Die();
+            }
+        }
+        // Mostrar onda visual con LineRenderer
+        ShowAttackWaveLine(attackPos, attackRange);
+    }
+
+    private void ShowAttackWaveLine(Vector2 pos, float range)
+    {
+        if (attackWaveCoroutine != null) StopCoroutine(attackWaveCoroutine);
+        if (attackWaveLineRenderer != null)
+        {
+            attackWaveLineRenderer.positionCount = attackWaveSegments + 1;
+            for (int i = 0; i <= attackWaveSegments; i++)
+            {
+                float angle = i * 2 * Mathf.PI / attackWaveSegments;
+                float x = Mathf.Cos(angle) * range + pos.x;
+                float y = Mathf.Sin(angle) * range + pos.y;
+                attackWaveLineRenderer.SetPosition(i, new Vector3(x, y, 0));
+            }
+            attackWaveLineRenderer.enabled = true;
+            attackWaveCoroutine = StartCoroutine(HideAttackWaveLineAfterDelay(attackWaveShowTime));
+        }
+    }
+
+    private System.Collections.IEnumerator HideAttackWaveLineAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (attackWaveLineRenderer != null) attackWaveLineRenderer.enabled = false;
+    }
+
+    // Opcional: dibuja el rango de ataque en el editor
+    void OnDrawGizmosSelected()
+    {
+        Vector2 attackPos = (Vector2)transform.position + (Vector2)lastMoveDirection.normalized * attackRange * 0.5f;
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPos, attackRange);
+    }
 
     private void OnPreviousAction(object sender, EventArgs e)
     {

@@ -8,6 +8,11 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
     [SerializeField] private GameObject highlightEffect; // Opcional: efecto visual cuando está en rango
     [SerializeField] private Item.ItemType spawningItemType; // Opcional: efecto visual cuando está en rango
     [SerializeField] private Transform spawnMineralPoint; // Indica si el objeto está activo para interactuar
+    [SerializeField] private GameObject particleEffect; // Efecto de partículas al interactuar
+    [SerializeField] private AudioClip breakRockSound; // Sonido al romper la piedra
+    [SerializeField] private AudioSource audioSource; // AudioSource propio de la piedra
+
+    private bool isBeingDestroyed = false;
 
     public void Interact(Player player)
     {
@@ -40,8 +45,33 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
 
     private void PerformSpecialInteraction(Player player)
     {
+        if (particleEffect != null)
+        {
+            // Debug.Log($"Instanciando efecto de partículas en {gameObject.name}");
+            Instantiate(particleEffect, transform.position, Quaternion.identity);
+        }
+        // Reproducir sonido de romper piedra
+        if (breakRockSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(breakRockSound);
+        }
+        isBeingDestroyed = true;
+        // Ocultar el sprite y colisionador mientras suena el audio
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>())
+        {
+            sr.enabled = false;
+        }
+        foreach (var col in GetComponents<Collider2D>())
+        {
+            col.enabled = false;
+        }
         ItemWorld.DropItem(spawnMineralPoint.position, new Item { itemType = spawningItemType, amount = 1 });
-        Destroy(gameObject); // Destruir el objeto interactuable después de la interacción
+        MineralCounter mineralCounterController = FindFirstObjectByType<MineralCounter>();
+        if (mineralCounterController)
+        {
+            mineralCounterController.AddMineral();
+        }
+        Destroy(gameObject, breakRockSound != null ? breakRockSound.length : 0f); // Espera a que termine el sonido
     }
 
     public string GetInteractText()
@@ -63,15 +93,29 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         }
 
         // Cambiar color del sprite o agregar outline
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        // Debug.Log($"SpriteRenderers encontrados: {spriteRenderers.Length}");
+        if (spriteRenderers.Length > 1)
         {
-            spriteRenderer.color = Color.yellow; // Destacar el objeto
+            // Cambiar el color del primer SpriteRenderer encontrado
+            if (player.GetInventory().HasItem(requiredItemType))
+            {
+                spriteRenderers[1].color = Color.yellow; // Cambiar a un color de resaltado
+            }
+            else
+            {
+                spriteRenderers[1].color = Color.red; // Cambiar a un color de advertencia
+            }
+            if (player.GetSelectedItem().itemType == requiredItemType)
+            {
+                spriteRenderers[1].color = Color.green; // Cambiar a un color de éxito
+            }
         }
     }
 
     public void OnPlayerExit(Player player)
     {
+        if (isBeingDestroyed) return;
 
         // Desactivar efecto visual
         if (highlightEffect != null)
@@ -80,10 +124,11 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         }
 
         // Restaurar color original
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        if (spriteRenderers.Length > 1)
         {
-            spriteRenderer.color = Color.white;
+            // Restaurar el color del primer SpriteRenderer encontrado
+            spriteRenderers[1].color = Color.white; // Restaurar al color original
         }
     }
 
@@ -99,4 +144,3 @@ public class BigMineralInteractable : MonoBehaviour, IInteractable
         interactText = newText;
     }
 }
-

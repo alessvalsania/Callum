@@ -62,9 +62,8 @@ public class GameInput : MonoBehaviour
     // it's parameters should look like this one
     private void Interact_performed(InputAction.CallbackContext obj)
     {
-        Debug.Log("Interacted with the counter");
         OnInteractAction?.Invoke(this, EventArgs.Empty);
-
+        OnInteractAlternateAction?.Invoke(this, EventArgs.Empty);
         // We are saynig here basically that in this interaction
         // We are the object that it's calling it
         // And we are not sending any arguments

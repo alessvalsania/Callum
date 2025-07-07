@@ -171,10 +171,22 @@ public class InteractableObject : MonoBehaviour, IInteractable
         }
 
         // Cambiar color del sprite o agregar outline
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = GetComponentsInParent<SpriteRenderer>();
+        if (spriteRenderers.Length > 0)
         {
-            spriteRenderer.color = Color.yellow;
+            // Cambiar el color del primer SpriteRenderer encontrado
+            if (player.GetInventory().HasItem(requiredItemType))
+            {
+                spriteRenderers[0].color = Color.yellow; // Cambiar a un color de resaltado
+            }
+            else
+            {
+                spriteRenderers[0].color = Color.red; // Cambiar a un color de advertencia
+            }
+            if (player.GetSelectedItem().itemType == requiredItemType)
+            {
+                spriteRenderers[0].color = Color.green; // Cambiar a un color de éxito
+            }
         }
 
         if (minigameTextUI != null)
@@ -195,10 +207,10 @@ public class InteractableObject : MonoBehaviour, IInteractable
         }
 
         // Restaurar color original
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = GetComponentsInParent<SpriteRenderer>();
+        if (spriteRenderers.Length > 0)
         {
-            spriteRenderer.color = Color.white;
+            spriteRenderers[0].color = Color.white; // Restaurar al color original
         }
 
         if (minigameTextUI != null)

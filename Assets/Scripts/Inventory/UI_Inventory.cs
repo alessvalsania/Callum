@@ -63,7 +63,20 @@ public class UI_Inventory : MonoBehaviour
             {
                 itemSlotRectTransform.Find("backgroundSelected").gameObject.SetActive(true);
                 itemSlotRectTransform.Find("background").gameObject.SetActive(false);
+                if (item.itemType == Item.ItemType.Mineral)
+                {
+                    player.itemVisual.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f); // Adjust scale for mineral
+                }
+                else if (item.itemType == Item.ItemType.Sword)
+                {
+                    player.itemVisual.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                }
+                else
+                {
+                    player.itemVisual.transform.localScale = new Vector3(1f, 1f, 1f); // Default scale
+                }
                 player.SetHoldPointImageVisual(image.sprite);
+
             }
             index++;
             x++;
